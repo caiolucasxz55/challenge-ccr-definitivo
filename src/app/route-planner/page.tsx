@@ -1,7 +1,7 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,25 +14,20 @@ import { useSavedRoutes } from "@/hooks/use-saved-routes"
 import { AlertCircle, Save } from "lucide-react"
 import type { Estacao } from "@/types/metro-type"
 
-export default function RoutePlannerPage() {
-  const [origem, setOrigem] = useState<string>("")
-  const [destino, setDestino] = useState<string>("")
-  const [rota, setRota] = useState<Estacao[]>([])
-  const [error, setError] = useState<string>("")
-  const [routeName, setRouteName] = useState<string>("")
-  const { user, loading } = useAuth()
-  const { saveRoute } = useSavedRoutes()
-  const router = useRouter()
+// Componente que usa useSearchParams
+function RouteParamsHandler({ 
+  setOrigem, 
+  setDestino, 
+  setRota, 
+  setRouteName 
+}: { 
+  setOrigem: (value: string) => void
+  setDestino: (value: string) => void
+  setRota: (value: Estacao[]) => void
+  setRouteName: (value: string) => void
+}) {
   const searchParams = useSearchParams()
-
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login")
-    }
-  }, [user, loading, router])
-
-  // Auto-load route from query params
+  
   useEffect(() => {
     const from = searchParams.get("from")
     const to = searchParams.get("to")
@@ -50,7 +45,27 @@ export default function RoutePlannerPage() {
         setRouteName(`${originName} → ${destName}`)
       }
     }
-  }, [searchParams])
+  }, [searchParams, setOrigem, setDestino, setRota, setRouteName])
+  
+  return null
+}
+
+export default function RoutePlannerPage() {
+  const [origem, setOrigem] = useState<string>("")
+  const [destino, setDestino] = useState<string>("")
+  const [rota, setRota] = useState<Estacao[]>([])
+  const [error, setError] = useState<string>("")
+  const [routeName, setRouteName] = useState<string>("")
+  const { user, loading } = useAuth()
+  const { saveRoute } = useSavedRoutes()
+  const router = useRouter()
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login")
+    }
+  }, [user, loading, router])
 
   if (loading || !user) {
     return (
@@ -106,6 +121,16 @@ export default function RoutePlannerPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Componente com useSearchParams envolvido em Suspense */}
+      <Suspense fallback={<div>Carregando parâmetros...</div>}>
+        <RouteParamsHandler 
+          setOrigem={setOrigem}
+          setDestino={setDestino}
+          setRota={setRota}
+          setRouteName={setRouteName}
+        />
+      </Suspense>
+
       <h1 className="text-3xl font-bold mb-6">Planejador de Rotas</h1>
 
       <Card className="mb-6">
