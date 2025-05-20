@@ -42,10 +42,12 @@ export default function RegisterPage() {
       await register(name, email, password)
       router.push("/login")
     } catch (err) {
-      setError("Erro ao cadastrar. Tente novamente.")
+      const error = err as Error
+      setError(error.message || "Erro ao cadastrar. Tente novamente.")
     } finally {
       setIsLoading(false)
     }
+
   }
 
   return (

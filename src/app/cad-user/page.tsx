@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { registerUsuario } from "@/service/API/usuario" 
+import { registerUsuario } from "@/service/API/usuario"
 
 export default function RegisterPage() {
   const [name, setName] = useState("")
@@ -35,8 +35,9 @@ export default function RegisterPage() {
     try {
       await registerUsuario(name, email)
       router.push("/login-user")
-    } catch (err: any) {
-      setError(err.message || "Erro ao cadastrar. Tente novamente.")
+    } catch (err) {
+      const error = err as Error
+      setError(error.message || "Erro ao cadastrar. Tente novamente.")
     }
   }
 

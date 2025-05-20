@@ -51,11 +51,13 @@ export default function RegisterPage() {
       }
 
       router.push('/login-user')
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      const error = err as Error
+      setError(error.message || "Erro ao redirecionar para login.")
     } finally {
       setIsLoading(false)
     }
+
   }
 
   return (

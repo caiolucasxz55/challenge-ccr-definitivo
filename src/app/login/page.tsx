@@ -34,10 +34,12 @@ export default function LoginPage() {
       await login(email, password)
       router.push("/route-planner")
     } catch (err) {
-      setError("Credenciais inválidas. Tente novamente.")
+      const error = err as Error
+      setError(error.message || "Credenciais inválidas. Tente novamente.")
     } finally {
       setIsLoading(false)
     }
+
   }
 
   return (
