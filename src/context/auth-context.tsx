@@ -1,79 +1,79 @@
-"use client"
+'use client'
 
-import React, { createContext, useEffect, useState } from "react"
+import { createContext, useEffect, useState, ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 
-interface User {
-  id: string
+type User = {
   name: string
   email: string
 }
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
-  loading: boolean
+  register: (name: string, email: string, password: string) => Promise<void>
 }
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  login: async () => {},
-  register: async () => {},
-  logout: () => {},
-  loading: true,
-})
+export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const BASE_URL = "https://java-teste-deploy-production.up.railway.app"
+  const router = useRouter()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("metro-user")
-    if (storedUser) setUser(JSON.parse(storedUser))
-    setLoading(false)
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    }
   }, [])
 
-  const register = async (name: string, email: string, password: string) => {
-    const res = await fetch(`${BASE_URL}/api/users/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      throw new Error(data.message || "Erro ao registrar")
+  const login = async (email: string, password: string) => {
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]')
+
+    const foundUser = storedUsers.find(
+      (u: User & { password: string }) => u.email === email && u.password === password
+    )
+
+    if (foundUser) {
+      const { name, email } = foundUser
+      const loggedUser = { name, email }
+      setUser(loggedUser)
+      localStorage.setItem('user', JSON.stringify(loggedUser))
+      router.push('/')
+    } else {
+      throw new Error('Email ou senha incorretos')
     }
   }
 
-  const login = async (email: string, password: string) => {
-    const res = await fetch(`${BASE_URL}/api/users/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
-      throw new Error(data.message || "Erro ao fazer login")
+  const register = async (name: string, email: string, password: string) => {
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]')
+
+    const userExists = storedUsers.some((u: User) => u.email === email)
+
+    if (userExists) {
+      throw new Error('Usuário já cadastrado')
     }
-    const data = await res.json()
-    setUser({
-      id: data.id.toString(),
-      name: data.name,
-      email: data.email,
-    })
-    localStorage.setItem("metro-user", JSON.stringify(data))
+
+    const newUser = { name, email, password }
+    const updatedUsers = [...storedUsers, newUser]
+    localStorage.setItem('users', JSON.stringify(updatedUsers))
+
+    const loggedUser = { name, email }
+    setUser(loggedUser)
+    localStorage.setItem('user', JSON.stringify(loggedUser))
+
+    router.push('/')
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("metro-user")
+    localStorage.removeItem('user')
+    router.push('/login')
   }
 
   return (
-    <AuthContext.Provider value={{ user, register, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   )
