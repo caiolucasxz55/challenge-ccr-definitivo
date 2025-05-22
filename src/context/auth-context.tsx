@@ -2,8 +2,10 @@
 
 import { createContext, useEffect, useState, ReactNode, useContext } from 'react'
 import { useRouter } from 'next/navigation'
+import { v4 as uuidv4 } from 'uuid'
 
 type User = {
+  id: string
   name: string
   email: string
   password: string
@@ -33,10 +35,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const login = async (email: string, password: string) => {
-    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]')
+    const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]')
 
     const foundUser = storedUsers.find(
-      (u: User) => u.email === email && u.password === password
+      (u) => u.email === email && u.password === password
     )
 
     if (foundUser) {
@@ -49,15 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const register = async (name: string, email: string, password: string) => {
-    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]')
+    const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]')
 
-    const userExists = storedUsers.some((u: User) => u.email === email)
+    const userExists = storedUsers.some((u) => u.email === email)
 
     if (userExists) {
       throw new Error('Email já cadastrado')
     }
 
-    const newUser = { name, email, password }
+    const newUser: User = { id: uuidv4(), name, email, password }
     const updatedUsers = [...storedUsers, newUser]
 
     localStorage.setItem('users', JSON.stringify(updatedUsers))
