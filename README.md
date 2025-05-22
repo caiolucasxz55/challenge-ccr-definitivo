@@ -24,3 +24,4 @@ Este projeto foi desenvolvido como parte das atividades acadêmicas da **FIAP** 
 ## 📌 Observações
 
 > Apesar de haver arquivos com nomes semelhantes como `login.tsx`, `login-user.tsx`, `register.tsx` e `cad-user.tsx`, eles **não são redundantes**. Cada um faz uso do método POST com estruturas próprias e foram organizados dessa forma para **melhor clareza e separação de responsabilidades** durante o desenvolvimento.
+> Ouve um problema do deploy do backend em java pelo railway e para não comprometer  a integridade e funcionalidade optamos por retirar do ar e seguir apenas com os dados armazenados em local storage.
