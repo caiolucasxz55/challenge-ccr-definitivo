@@ -1,80 +1,68 @@
 'use client'
 
-import { createContext, useEffect, useState, ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { createContext, useEffect, useState, ReactNode, useContext } from 'react';
+import { useRouter } from 'next/navigation';
 
 type User = {
-  name: string
-  email: string
-}
+  email: string;
+  password: string;
+};
 
 type AuthContextType = {
-  user: User | null
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
-  register: (name: string, email: string, password: string) => Promise<void>
-}
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
+};
 
-export const AuthContext = createContext<AuthContextType>({} as AuthContextType)
+export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user')
+    const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser))
+      setUser(JSON.parse(storedUser));
     }
-  }, [])
+    setLoading(false);
+  }, []);
 
   const login = async (email: string, password: string) => {
-    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]')
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
 
     const foundUser = storedUsers.find(
-      (u: User & { password: string }) => u.email === email && u.password === password
-    )
+      (u: User) => u.email === email && u.password === password
+    );
 
     if (foundUser) {
-      const { name, email } = foundUser
-      const loggedUser = { name, email }
-      setUser(loggedUser)
-      localStorage.setItem('user', JSON.stringify(loggedUser))
-      router.push('/')
+      setUser(foundUser);
+      localStorage.setItem('user', JSON.stringify(foundUser));
+      router.push('/'); // Redireciona para a página inicial
     } else {
-      throw new Error('Email ou senha incorretos')
+      throw new Error('Email ou senha incorretos');
     }
-  }
-
-  const register = async (name: string, email: string, password: string) => {
-    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]')
-
-    const userExists = storedUsers.some((u: User) => u.email === email)
-
-    if (userExists) {
-      throw new Error('Usuário já cadastrado')
-    }
-
-    const newUser = { name, email, password }
-    const updatedUsers = [...storedUsers, newUser]
-    localStorage.setItem('users', JSON.stringify(updatedUsers))
-
-    const loggedUser = { name, email }
-    setUser(loggedUser)
-    localStorage.setItem('user', JSON.stringify(loggedUser))
-
-    router.push('/')
-  }
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
+    setUser(null);
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
