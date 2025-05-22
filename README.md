@@ -1,6 +1,8 @@
 
 # 🚇 Smart Guide – Planejador de Rotas do Metrô de São Paulo
 
+https://smartguide-ccr.vercel.app/
+
 **Smart Guide** é uma aplicação web interativa que facilita o planejamento de rotas no sistema metroviário de São Paulo. Com foco em acessibilidade e usabilidade, a plataforma permite que os usuários visualizem estações, calculem rotas eficientes, salvem trajetos favoritos e consultem informações detalhadas de cada estação.
 
 ## 🔍 Funcionalidades Principais
