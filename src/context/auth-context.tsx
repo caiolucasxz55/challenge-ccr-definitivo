@@ -12,6 +12,7 @@ type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  register: (email: string, password: string) => Promise<void>;
   loading: boolean;
 };
 
@@ -40,10 +41,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (foundUser) {
       setUser(foundUser);
       localStorage.setItem('user', JSON.stringify(foundUser));
-      router.push('/'); // Redireciona para a página inicial
+      router.push('/');
     } else {
       throw new Error('Email ou senha incorretos');
     }
+  };
+
+  const register = async (email: string, password: string) => {
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+
+    const userExists = storedUsers.some((u: User) => u.email === email);
+
+    if (userExists) {
+      throw new Error('Email já cadastrado');
+    }
+
+    const newUser = { email, password };
+    const updatedUsers = [...storedUsers, newUser];
+
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    localStorage.setItem('user', JSON.stringify(newUser));
+
+    setUser(newUser);
+    router.push('/');
   };
 
   const logout = () => {
@@ -53,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
       {children}
     </AuthContext.Provider>
   );
